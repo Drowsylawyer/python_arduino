@@ -1,0 +1,52 @@
+// font custom
+#include "Free_Fonts.h"
+// lcd
+#include "TFT_eSPI.h"
+// posizione
+#include "Ultrasonic.h"
+//data ora
+#include "RTC_SAMD51.h"
+#include "DateTime.h"
+DateTime now;
+RTC_SAMD51 rtc;
+
+TFT_eSPI tft;
+int w;  //larghezza schermo
+int h;  // altezza schermo
+Ultrasonic ranger(0);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  tft.begin();
+  tft.setRotation(3);
+  w = tft.width();
+  h = tft.height();
+  tft.fillScreen(TFT_WHITE);
+  //colore personalizzato
+  //ftf.fillScreen(tft.color565(uint8_t red, uint8_t green, uint8_t blue));
+  tft.setTextColor(TFT_NAVY);
+  tft.setTextSize(1);
+  tft.setFreeFont(FSS12);
+  // orologio
+  rtc.begin();
+  now = DateTime(F(__DATE__), F(__TIME__));
+  rtc.adjust(now);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  long range;
+  range = ranger.MeasureInCentimeters();
+  Serial.print(range);
+  Serial.println(" cm");
+  String txt = "Range=" + String(range);
+  tft.fillRect(0, 0, w, 40, TFT_WHITE);
+  tft.drawString(txt, 5, 5);
+  tft.fillRect(w / 2, 0, w / 2, 40, TFT_WHITE);
+  now = rtc.now();
+  txt = "Time" + String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second());
+  tft.drawString(txt, w / 2 + 5, 5);
+
+  delay(500);
+}
